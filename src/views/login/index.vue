@@ -1,7 +1,9 @@
 <template>
   <div class="login-container">
     <!-- 导航栏 -->
-    <van-nav-bar class="page-nav-bav" title="登录" />
+    <van-nav-bar class="page-nav-bav" title="登录">
+      <van-icon slot="left" name="cross" @click="$router.back()"></van-icon>
+    </van-nav-bar>
 
     <!-- 登陆表单 -->
     <van-form @submit="onSubmit" ref="LoginFrom">
@@ -12,34 +14,34 @@
         :rules="userFromRules.mobile"
         type="number"
         maxlength="11"
-
       >
         <i slot="left-icon" class="toutiao toutiao-shouji"></i>
       </van-field>
-      <van-field 
-      v-model="user.code"
-       name="code" 
-       placeholder="请输入验证码"
-       :rules="userFromRules.code"
+      <van-field
+        v-model="user.code"
+        name="code"
+        placeholder="请输入验证码"
+        :rules="userFromRules.code"
         type="number"
         maxlength="6"
-       >
+      >
         <i slot="left-icon" class="toutiao toutiao-yanzhengma"></i>
         <!-- #button 是solt='button'的缩写 -->
         <template #button>
-        <van-count-down 
-        v-if="isCountDownShow" 
-        :time="1000 * 60" 
-          format="ss s" 
-            @finish="isCountDownShow = false"/>
-          <van-button 
-          class="send-sms-btn" 
-          native-type="button"
-          round 
-          size="small" 
-          type="default"
-           @click="onSendSms"
-           v-else
+          <van-count-down
+            v-if="isCountDownShow"
+            :time="1000 * 60"
+            format="ss s"
+            @finish="isCountDownShow = false"
+          />
+          <van-button
+            class="send-sms-btn"
+            native-type="button"
+            round
+            size="small"
+            type="default"
+            @click="onSendSms"
+            v-else
             >发送验证码</van-button
           >
         </template>
@@ -54,7 +56,7 @@
 </template>
 
 <script>
-import { login ,sendSms } from "@/api/user";
+import { login, sendSms } from "@/api/user";
 export default {
   name: "index",
   data() {
@@ -76,7 +78,7 @@ export default {
         ],
       },
       //是否展示倒计时
-      isCountDownShow:false
+      isCountDownShow: false,
     };
   },
   created() {},
@@ -92,48 +94,55 @@ export default {
       });
       // 3 提交表单请求登录
       try {
-        const {data} = await login(user);
-        this.$store.commit('setUser',data.data)
+        const { data } = await login(user);
+        this.$store.commit("setUser", data.data);
         this.$toast.success("登陆成功");
+
+        // 登陆成功跳转回原来的页面
+        this.$router.back()
       } catch (err) {
         if (err.response.status === 400) {
-          this.$toast.fail("手机号或者验证码错误");
+          this.$toast.fail("手机号或验证码错误");
         } else {
-          this.$toast.fail("登录失败,请稍后重试");
+          this.$toast.fail("登录失败，请稍后重试");
         }
       }
       // 4 根据响应结果进行后续操作
     },
-    async onSendSms (){
+    async onSendSms() {
       // 1.校验手机号
-      try{
-         await this.$refs.LoginFrom.validate('mobile') //调用validate手动校验
-      }catch (err){
-       return console.log('验证失败',err);
+      try {
+        await this.$refs.LoginFrom.validate("mobile"); //调用validate手动校验
+      } catch (err) {
+        return console.log("验证失败", err);
       }
       // 2. 验证通过 显示倒计时
-      this.isCountDownShow=true
+      this.isCountDownShow = true;
       // 3. 发送验证码
       try {
-        await sendSms(this.user.mobile)
-        this.$toast.success('发送成功')
+        await sendSms(this.user.mobile);
+        this.$toast.success("发送成功");
+      } catch (err) {
+        this.isCountDownShow = false;
+        if (err.response.status === 429) {
+          this.$toast.fail("发送频繁,稍后重试");
+        } else {
+          this.$toast.fail("发送失败,稍后重试");
+        }
       }
-      catch(err){
-        this.isCountDownShow=false
-      if(err.response.status===429){
-        this.$toast.fail('发送频繁,稍后重试')
-      }else {
-        this.$toast.fail('发送失败,稍后重试')
-      }
-        
-      }
-    }
+    },
   },
 };
 </script>
 
 <style lang="less" scoped>
 .login-container {
+  .page-nav-bav {
+    background-color: #3296fa;
+     .van-nav-bar__title, .van-icon {
+    color: #fff;
+  }
+  }
   .toutiao {
     font-size: 37px;
   }
