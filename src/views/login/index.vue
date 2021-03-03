@@ -99,7 +99,7 @@ export default {
         this.$toast.success("登陆成功");
 
         // 登陆成功跳转回原来的页面
-        this.$router.back()
+        this.$router.back();
       } catch (err) {
         if (err.response.status === 400) {
           this.$toast.fail("手机号或验证码错误");
@@ -139,9 +139,10 @@ export default {
 .login-container {
   .page-nav-bav {
     background-color: #3296fa;
-     .van-nav-bar__title, .van-icon {
-    color: #fff;
-  }
+    .van-nav-bar__title,
+    .van-icon {
+      color: #fff;
+    }
   }
   .toutiao {
     font-size: 37px;
