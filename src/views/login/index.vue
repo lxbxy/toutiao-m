@@ -63,7 +63,7 @@ export default {
     return {
       //表单数据对象
       user: {
-        mobile: "15225409484",
+        mobile: "15225409411",
         code: "246810",
       },
       //表单验证规则对象

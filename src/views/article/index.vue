@@ -61,27 +61,47 @@
         ></div>
         <van-divider>正文结束</van-divider>
 
+        <!-- 文章评论列表 -->
+        <comment-list
+          :source="article.art_id"
+          @onload-success="totalCommentCount = $event.total_count"
+          :list="commentList"
+          @reply-click="onReplyClick"
+        ></comment-list>
 
         <!-- 底部区域 -->
         <div class="article-bottom">
-          <van-button class="comment-btn" type="default" round size="small"
+          <van-button
+            class="comment-btn"
+            type="default"
+            round
+            size="small"
+            @click="isPostShow = true"
             >写评论</van-button
           >
-          <van-icon name="comment-o" badge="123" color="#777" />
+          <van-icon name="comment-o" :badge="totalCommentCount" color="#777" />
           <!-- 收藏 -->
           <collect-article
             class="btn-item"
             v-model="article.is_collected"
             :article-id="article.art_id"
           ></collect-article>
-          <like-article 
-          v-model="article.attitude"
-          class="btn-item"
-          :article-id="article.art_id"></like-article>
+          <like-article
+            v-model="article.attitude"
+            class="btn-item"
+            :article-id="article.art_id"
+          ></like-article>
           <van-icon name="share" color="#777777"></van-icon>
         </div>
         <!-- /底部区域 -->
 
+        <!-- 发布评论弹出层 -->
+        <van-popup v-model="isPostShow" position="bottom">
+          <comment-post
+            :target="article.art_id"
+            @post-success="onPostSuccess"
+          />
+        </van-popup>
       </div>
       <!-- /加载完成-文章详情 -->
 
@@ -100,6 +120,15 @@
       </div>
       <!-- /加载失败：其它未知错误（例如网络原因或服务端异常） -->
     </div>
+
+    <!-- 评论回复 -->
+    <van-popup v-model="isReplyShow" position="bottom" style="height: 100%">
+      <comment-reply
+        v-if="isReplyShow"
+        @close="isReplyShow = false"
+        :comment="currentComment"
+      />
+    </van-popup>
   </div>
 </template>
 
@@ -110,6 +139,9 @@ import { ImagePreview } from "vant";
 import FollowUser from "@/components/follow-user";
 import CollectArticle from "@/components/collect-article";
 import LikeArticle from "@/components/like-article";
+import CommentList from "./components/comment-list";
+import CommentPost from "./components/comment-post";
+import CommentReply from "./components/comment-reply";
 // ImagePreview({
 //   images: [
 //     "https://img01.yzcdn.cn/vant/apple-1.jpg",
@@ -126,7 +158,10 @@ export default {
   components: {
     FollowUser,
     CollectArticle,
-    LikeArticle
+    LikeArticle,
+    CommentList,
+    CommentPost,
+    CommentReply,
   },
   props: {
     articleId: {
@@ -134,12 +169,22 @@ export default {
       required: true,
     },
   },
+  provide: function () {
+    return {
+      articleId: this.articleId,
+    };
+  },
   data() {
     return {
       article: {}, // 文章详情
       loading: true, //加载状态
       errStatus: 0, //失败状态码
-      // followLoading: false
+      followLoading: false,
+      totalCommentCount: 0,
+      isPostShow: false,
+      commentList: [],
+      isReplyShow: false,
+      currentComment: {}, //当前点击回复的评论项
     };
   },
   computed: {},
@@ -194,6 +239,18 @@ export default {
           });
         };
       });
+    },
+    onPostSuccess(data) {
+      // 关闭弹层
+      this.isPostShow = false;
+
+      //将发布内容显示到文章顶部
+      this.commentList.unshift(data.new_obj);
+    },
+    onReplyClick(comment) {
+      this.currentComment = comment;
+
+      this.isReplyShow = true;
     },
   },
 };

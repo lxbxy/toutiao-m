@@ -56,3 +56,31 @@ export const getUserChannels = () => {
       url: `/app/v1_0/user/followings/${target}`//target目标用户（被取消关注的用户id）
     })
   }
+  
+//获取用户信息
+  export const getUserProfile = () => { 
+    return request({
+      method: 'GET', 
+      url: '/app/v1_0/user/profile'//target目标用户（被取消关注的用户id）
+    })
+  }
+
+//编辑用户信息
+  
+  export const updateUserProfile = (data) => { 
+    return request({
+      method: 'PATCH', 
+      url: '/app/v1_0/user/profile',//target目标用户（被取消关注的用户id）
+      data
+
+    })
+  }
+
+//更新用户照片资料
+export const updateUserPhoto = (data) => { 
+    return request({
+      method: 'PATCH', 
+      url: '/app/v1_0/user/photo',//target目标用户（被取消关注的用户id）
+      data
+    })
+  }
